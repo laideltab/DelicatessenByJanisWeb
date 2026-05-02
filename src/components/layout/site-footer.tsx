@@ -2,10 +2,15 @@ import Link from "next/link"
 import { Wordmark } from "./wordmark"
 import { mainNav } from "./nav-config"
 
+const moreLinks = [
+  { href: "/special-orders", label: "Special orders" },
+  { href: "/memberships", label: "Memberships" },
+  { href: "/terms", label: "Terms & policies" },
+]
+
 const hours = [
-  { day: "Mon – Fri", time: "7:00 – 19:00" },
-  { day: "Saturday", time: "8:00 – 20:00" },
-  { day: "Sunday", time: "9:00 – 17:00" },
+  { day: "Mon – Sat", time: "10:00 AM – 9:00 PM" },
+  { day: "Sunday", time: "11:00 AM – 7:00 PM" },
 ]
 
 const social = [
@@ -16,7 +21,7 @@ const social = [
 export function SiteFooter() {
   return (
     <footer className="mt-24 border-t border-border bg-blush-100">
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 sm:py-16 md:grid-cols-4 lg:px-8">
+      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 sm:py-16 md:grid-cols-5 lg:px-8">
         <div className="space-y-4 md:col-span-2">
           <Wordmark size="lg" />
           <p className="max-w-xs text-sm text-muted-foreground">
@@ -29,6 +34,22 @@ export function SiteFooter() {
           <h3 className="mb-3 font-display text-lg">Explore</h3>
           <ul className="space-y-2 text-sm">
             {mainNav.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="text-muted-foreground hover:text-ink-800"
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="mb-3 font-display text-lg">More</h3>
+          <ul className="space-y-2 text-sm">
+            {moreLinks.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}

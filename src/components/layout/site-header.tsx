@@ -1,9 +1,9 @@
 import Link from "next/link"
-import { ShoppingBag } from "lucide-react"
 import { Wordmark } from "./wordmark"
 import { MobileNav } from "./mobile-nav"
 import { mainNav } from "./nav-config"
 import { Button } from "@/components/ui/button"
+import { CartButton } from "@/components/cart/cart-button"
 
 export function SiteHeader() {
   return (
@@ -27,13 +27,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link
-            href="/cart"
-            aria-label="View cart"
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-md text-ink-800 hover:bg-blush-100"
-          >
-            <ShoppingBag className="h-5 w-5" />
-          </Link>
+          <CartButton />
           <Button asChild size="sm" className="hidden md:inline-flex">
             <Link href="/shop">Order now</Link>
           </Button>

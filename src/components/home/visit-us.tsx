@@ -1,85 +1,98 @@
 import { MapPin, Clock } from "lucide-react"
 
 const hours = [
-  { day: "Mon – Fri", time: "7:00 – 19:00" },
-  { day: "Saturday", time: "8:00 – 20:00" },
-  { day: "Sunday", time: "9:00 – 17:00" },
+  { day: "Mon – Sat", time: "10:00 AM – 9:00 PM" },
+  { day: "Sunday", time: "11:00 AM – 7:00 PM" },
 ]
 
 export function VisitUs() {
   return (
     <section
       aria-labelledby="visit-us-heading"
-      className="bg-sugar-100 py-20 sm:py-24"
+      className="relative bg-sugar-100 py-20 sm:py-24"
     >
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 max-w-2xl">
-          <p className="text-xs font-medium uppercase tracking-[0.28em] text-ink-800">
+          <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.32em] text-ink-800">
+            <span className="h-px w-6 bg-brass-500" aria-hidden />
             Visit us
           </p>
           <h2
             id="visit-us-heading"
-            className="mt-3 font-display text-3xl leading-tight text-ink-900 sm:text-4xl md:text-5xl"
+            className="mt-4 font-display text-3xl leading-[1.05] tracking-tight text-ink-900 sm:text-4xl md:text-5xl"
           >
-            Come say hi.
+            Come <span className="italic text-ink-800">say hi.</span>
           </h2>
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 md:gap-12">
           <div className="space-y-8">
             <div>
-              <div className="mb-3 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-ink-800">
-                <Clock className="h-4 w-4" />
+              <div className="mb-3 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.28em] text-ink-800">
+                <Clock className="h-4 w-4 text-brass-600" aria-hidden />
                 Hours
               </div>
               <ul className="space-y-2 text-base">
                 {hours.map((h) => (
                   <li
                     key={h.day}
-                    className="flex items-baseline justify-between gap-3 border-b border-blush-100 pb-2 text-muted-foreground"
+                    className="flex items-baseline justify-between gap-3 border-b border-brass-500/25 pb-2 text-muted-foreground"
                   >
                     <span>{h.day}</span>
-                    <span className="text-ink-800">{h.time}</span>
+                    <span className="font-display text-ink-900">{h.time}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
             <div>
-              <div className="mb-3 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-ink-800">
-                <MapPin className="h-4 w-4" />
+              <div className="mb-3 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.28em] text-ink-800">
+                <MapPin className="h-4 w-4 text-brass-600" aria-hidden />
                 Address
               </div>
               <address className="not-italic text-base text-ink-800">
-                {/* TODO: real International Mall address pending */}
-                International Mall, Tampa, FL
+                Miami International Mall
                 <br />
-                <span className="text-muted-foreground">
-                  Exact address to be confirmed
-                </span>
+                1455 NW 107th Ave
+                <br />
+                Doral, FL 33172
               </address>
             </div>
           </div>
 
-          <div
-            aria-hidden
-            className="relative aspect-square overflow-hidden rounded-2xl bg-card ring-1 ring-blush-200"
-          >
-            {/* TODO: replace with Google Maps <iframe> using the real address */}
+          <div className="relative">
             <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage:
-                  "repeating-linear-gradient(90deg, var(--color-blush-200) 0 80px, #ffffff 80px 160px)",
-                opacity: 0.55,
-              }}
+              aria-hidden
+              className="pointer-events-none absolute -inset-2 rounded-[2rem] bg-gradient-to-br from-brass-500/30 via-blush-200/30 to-transparent blur-md"
             />
-            <div className="relative flex h-full w-full flex-col items-center justify-center gap-2 p-8 text-center">
-              <MapPin className="h-8 w-8 text-ink-800" />
-              <span className="font-display text-xl italic text-ink-800/70">
-                Map coming soon
-              </span>
+            <div className="relative aspect-square overflow-hidden rounded-2xl bg-card ring-1 ring-brass-500/40 shadow-[0_20px_60px_-25px_rgba(33,33,33,0.4)]">
+              <iframe
+                title="Map to Delicatessen by Janis at Miami International Mall"
+                src="https://www.google.com/maps?q=1455+NW+107th+Ave,+Doral,+FL+33172&output=embed"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="absolute inset-0 h-full w-full border-0"
+              />
+
+              <span
+                aria-hidden
+                className="pointer-events-none absolute left-3 top-3 z-10 h-4 w-4 rounded-tl-md border-l border-t border-brass-500"
+              />
+              <span
+                aria-hidden
+                className="pointer-events-none absolute right-3 bottom-3 z-10 h-4 w-4 rounded-br-md border-r border-b border-brass-500"
+              />
             </div>
+
+            <a
+              href="https://www.google.com/maps/dir/?api=1&destination=1455+NW+107th+Ave,+Doral,+FL+33172"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.22em] text-ink-800 underline-offset-4 hover:underline"
+            >
+              <MapPin className="h-4 w-4 text-brass-600" aria-hidden />
+              Get directions
+            </a>
           </div>
         </div>
       </div>

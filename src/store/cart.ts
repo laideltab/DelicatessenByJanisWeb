@@ -1,68 +1,132 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+"use client"
+
+import { create } from "zustand"
+import { persist, createJSONStorage } from "zustand/middleware"
 
 export type CartItem = {
-  id: string
+  /** `${productId}:${variationId}` — the cart line key. */
+  lineId: string
+  productId: string
   variationId: string
   name: string
-  variationName: string
-  price: number
+  variantName: string
+  /** Snapshotted unit price at the time the item was added. */
+  unitPrice: number
   currency: string
-  quantity: number
-  imageUrl: string | null
+  image: string | null
+  /** For deep-linking back to the product page. */
+  categorySlug: string | null
+  productSlug: string
+  qty: number
 }
 
-type CartStore = {
+export type AddItemInput = Omit<CartItem, "lineId" | "qty"> & { qty?: number }
+
+type CartState = {
   items: CartItem[]
-  addItem: (item: Omit<CartItem, 'quantity'>) => void
-  removeItem: (variationId: string) => void
-  updateQuantity: (variationId: string, quantity: number) => void
-  clearCart: () => void
-  totalItems: () => number
-  totalPrice: () => number
+  isOpen: boolean
 }
 
-export const useCartStore = create<CartStore>()(
-  persist(
-    (set, get) => ({
-      items: [],
+type CartActions = {
+  addItem: (input: AddItemInput) => void
+  removeItem: (lineId: string) => void
+  updateQty: (lineId: string, qty: number) => void
+  clear: () => void
+  open: () => void
+  close: () => void
+  toggle: () => void
+}
 
-      addItem: (item) => {
+const lineKey = (productId: string, variationId: string) =>
+  `${productId}:${variationId}`
+
+export const useCartStore = create<CartState & CartActions>()(
+  persist(
+    (set) => ({
+      items: [],
+      isOpen: false,
+
+      addItem: (input) =>
         set((state) => {
-          const existing = state.items.find((i) => i.variationId === item.variationId)
+          const id = lineKey(input.productId, input.variationId)
+          const qty = clamp(input.qty ?? 1)
+          const existing = state.items.find((i) => i.lineId === id)
           if (existing) {
             return {
               items: state.items.map((i) =>
-                i.variationId === item.variationId ? { ...i, quantity: i.quantity + 1 } : i,
+                i.lineId === id ? { ...i, qty: clamp(i.qty + qty) } : i,
               ),
+              isOpen: true,
             }
           }
-          return { items: [...state.items, { ...item, quantity: 1 }] }
-        })
-      },
+          const next: CartItem = {
+            lineId: id,
+            productId: input.productId,
+            variationId: input.variationId,
+            name: input.name,
+            variantName: input.variantName,
+            unitPrice: input.unitPrice,
+            currency: input.currency,
+            image: input.image,
+            categorySlug: input.categorySlug,
+            productSlug: input.productSlug,
+            qty,
+          }
+          return { items: [...state.items, next], isOpen: true }
+        }),
 
-      removeItem: (variationId) => {
-        set((state) => ({ items: state.items.filter((i) => i.variationId !== variationId) }))
-      },
-
-      updateQuantity: (variationId, quantity) => {
-        if (quantity <= 0) {
-          get().removeItem(variationId)
-          return
-        }
+      removeItem: (lineId) =>
         set((state) => ({
-          items: state.items.map((i) => (i.variationId === variationId ? { ...i, quantity } : i)),
-        }))
-      },
+          items: state.items.filter((i) => i.lineId !== lineId),
+        })),
 
-      clearCart: () => set({ items: [] }),
+      updateQty: (lineId, qty) =>
+        set((state) => {
+          if (qty <= 0) {
+            return { items: state.items.filter((i) => i.lineId !== lineId) }
+          }
+          return {
+            items: state.items.map((i) =>
+              i.lineId === lineId ? { ...i, qty: clamp(qty) } : i,
+            ),
+          }
+        }),
 
-      totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
+      clear: () => set({ items: [] }),
 
-      totalPrice: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+      open: () => set({ isOpen: true }),
+      close: () => set({ isOpen: false }),
+      toggle: () => set((s) => ({ isOpen: !s.isOpen })),
     }),
     {
-      name: 'delicatessen-cart',
+      name: "delicatessen-cart-v1",
+      storage: createJSONStorage(() => localStorage),
+      // Don't persist the open/close state across reloads.
+      partialize: (state) => ({ items: state.items }) as Partial<CartState>,
     },
   ),
 )
+
+function clamp(qty: number): number {
+  if (Number.isNaN(qty)) return 1
+  return Math.min(99, Math.max(1, Math.floor(qty)))
+}
+
+/** Total number of units in the cart. */
+export function selectCount(state: { items: CartItem[] }): number {
+  return state.items.reduce((sum, i) => sum + i.qty, 0)
+}
+
+/** Subtotal in major units (currency taken from the last item). */
+export function selectSubtotal(state: { items: CartItem[] }): {
+  amount: number
+  currency: string
+} {
+  let amount = 0
+  let currency = "USD"
+  for (const i of state.items) {
+    amount += i.unitPrice * i.qty
+    currency = i.currency
+  }
+  return { amount, currency }
+}

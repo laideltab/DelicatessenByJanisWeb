@@ -13,11 +13,11 @@ export const siteConfig = {
     instagram: "https://instagram.com/delicatessenbyjanis",
     facebook: "https://facebook.com/delicatessenbyjanis",
   },
-  // TODO: replace with real address once confirmed.
   address: {
-    streetAddress: "International Mall",
-    addressLocality: "Tampa",
+    streetAddress: "1455 NW 107th Ave",
+    addressLocality: "Doral",
     addressRegion: "FL",
+    postalCode: "33172",
     addressCountry: "US",
   },
 } as const

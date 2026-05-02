@@ -1,17 +1,33 @@
 import { cache } from "react"
+import { unstable_cache as nextCache } from "next/cache"
 import { fetchCatalog, type Category, type Product, type CatalogSnapshot } from "./catalog"
 
+export const CATALOG_CACHE_TAG = "square:catalog"
+
 /**
- * Request-scoped cache around fetchCatalog. Multiple page components on the
- * same render share a single Square call.
+ * Persistent cache shared across requests + invalidated by the Square webhook
+ * via revalidateTag(CATALOG_CACHE_TAG). The 1-hour `revalidate` is just a
+ * safety net for missed webhook deliveries.
+ */
+const cachedFetchCatalog = nextCache(
+  async (): Promise<CatalogSnapshot> => {
+    try {
+      return await fetchCatalog()
+    } catch (err) {
+      console.error("[catalog] Square unavailable, returning empty snapshot:", err)
+      return { products: [], categories: [] }
+    }
+  },
+  ["square-catalog"],
+  { tags: [CATALOG_CACHE_TAG], revalidate: 3600 },
+)
+
+/**
+ * Per-request memoization on top of nextCache, so multiple components in the
+ * same render share a single Square call and a single cached snapshot.
  */
 export const getCatalog = cache(async (): Promise<CatalogSnapshot> => {
-  try {
-    return await fetchCatalog()
-  } catch (err) {
-    console.error("[catalog] Square unavailable, returning empty snapshot:", err)
-    return { products: [], categories: [] }
-  }
+  return cachedFetchCatalog()
 })
 
 export type CategoryWithProducts = Category & {

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed:square": "tsx --env-file=.env.local scripts/seed-square-sandbox.ts",
+    "check:catalog": "tsx --env-file=.env.production.local scripts/check-square-catalog.ts",
     "optimize:hero": "tsx scripts/optimize-hero-video.ts"
   },
   "dependencies": {

@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { ArrowUpRight } from "lucide-react"
 import { ProductCard, ProductGrid } from "@/components/shop/product-card"
 import type { Product } from "@/lib/square/catalog"
 
@@ -10,26 +11,29 @@ export function FeaturedProducts({ products }: { products: FeaturedProduct[] }) 
   return (
     <section
       aria-labelledby="featured-heading"
-      className="bg-sugar-100 py-20 sm:py-24"
+      className="relative bg-sugar-100 py-20 sm:py-24"
     >
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 flex flex-wrap items-end justify-between gap-4">
+        <div className="mb-12 flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
           <div className="max-w-2xl">
-            <p className="text-xs font-medium uppercase tracking-[0.28em] text-ink-800">
-              Best sellers
+            <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.32em] text-ink-800">
+              <span className="h-px w-6 bg-brass-500" aria-hidden />
+              Counter favorites
             </p>
             <h2
               id="featured-heading"
-              className="mt-3 font-display text-3xl leading-tight text-ink-900 sm:text-4xl md:text-5xl"
+              className="mt-4 font-display text-3xl leading-[1.05] tracking-tight text-ink-900 sm:text-4xl md:text-5xl"
             >
-              Counter favorites.
+              What everyone is
+              <span className="italic text-ink-800"> reaching for.</span>
             </h2>
           </div>
           <Link
             href="/shop"
-            className="text-sm font-medium text-ink-800 underline-offset-4 hover:underline"
+            className="inline-flex items-center gap-1.5 text-sm font-medium uppercase tracking-[0.22em] text-ink-800 underline-offset-4 hover:underline"
           >
-            View all →
+            View all
+            <ArrowUpRight className="h-4 w-4" aria-hidden />
           </Link>
         </div>
 

@@ -13,6 +13,10 @@
   --color-blush-200: #f4becf;  /* Strawberry Sorbet — Benjamin Moore */
   --color-sugar-100: #f4f2ec;  /* Bit of Sugar — Behr */
 
+  /* Brass / gold — accent del playbook (hooks, mirrors, signage) */
+  --color-brass-500: #c9a063;
+  --color-brass-600: #a98850;
+
   /* Tipografía (negro del logo SVG) */
   --color-ink-700: #3a3a3a;
   --color-ink-800: #212121;
@@ -71,6 +75,9 @@
   --color-blush-200: var(--color-blush-200);
   --color-sugar-100: var(--color-sugar-100);
 
+  --color-brass-500: var(--color-brass-500);
+  --color-brass-600: var(--color-brass-600);
+
   --color-ink-700: var(--color-ink-700);
   --color-ink-800: var(--color-ink-800);
   --color-ink-900: var(--color-ink-900);
@@ -108,5 +115,27 @@
   ::selection {
     background: var(--color-blush-200);
     color: var(--color-ink-800);
+  }
+}
+
+@layer utilities {
+  /* Editorial scrolling marquee — pairs with .marquee-track inside. */
+  @keyframes marquee-x {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  .marquee-track {
+    animation: marquee-x 38s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+  }
+
+  /* Hero radial wash — soft luxe glow from the right side. */
+  .hero-glow {
+    background:
+      radial-gradient(80% 60% at 85% 35%, rgba(244, 190, 207, 0.55) 0%, transparent 60%),
+      radial-gradient(60% 50% at 0% 100%, rgba(246, 208, 216, 0.55) 0%, transparent 55%),
+      linear-gradient(180deg, var(--color-sugar-100) 0%, #fbf2ee 55%, var(--color-blush-100) 100%);
   }
 }

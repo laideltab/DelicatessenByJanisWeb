@@ -1,6 +1,7 @@
 import type { CatalogObject, CatalogItem, CatalogItemVariation, Money } from "square"
 import { getSquareClient } from "./client"
 import { withSquare } from "./errors"
+import { fetchInventoryCounts, type InventorySnapshot } from "./inventory"
 import { slugify } from "@/lib/utils"
 
 export type Money_ = { amount: number; currency: string }
@@ -11,6 +12,15 @@ export type ProductVariation = {
   price: Money_ | null
   sku: string | null
   ordinal: number
+  /**
+   * Whether Square tracks inventory for this variation. When false, the
+   * variation is always considered available (e.g. a bottomless coffee).
+   */
+  trackInventory: boolean
+  /** IN_STOCK quantity at the configured location, or null if untracked. */
+  stock: number | null
+  /** Convenience: untracked or stock > 0. */
+  inStock: boolean
 }
 
 export type Product = {
@@ -24,6 +34,8 @@ export type Product = {
   variations: ProductVariation[]
   basePrice: Money_ | null
   isArchived: boolean
+  /** True if any variation is in stock (or any variation is untracked). */
+  inStock: boolean
 }
 
 export type Category = {
@@ -59,27 +71,38 @@ function isVariation(
   return o.type === "ITEM_VARIATION"
 }
 
-function mapVariation(obj: CatalogObject): ProductVariation | null {
+function mapVariation(
+  obj: CatalogObject,
+  inventory: InventorySnapshot,
+): ProductVariation | null {
   if (!isVariation(obj)) return null
   const data = obj.itemVariationData
+  const trackInventory = data?.trackInventory === true
+  const stock = trackInventory ? inventory.get(obj.id) ?? 0 : null
+  const inStock = !trackInventory || (stock !== null && stock > 0)
+
   return {
     id: obj.id,
     name: data?.name ?? "",
     price: moneyToFloat(data?.priceMoney),
     sku: data?.sku ?? null,
     ordinal: data?.ordinal ?? 0,
+    trackInventory,
+    stock,
+    inStock,
   }
 }
 
 function mapItem(
   obj: CatalogObject & { type: "ITEM" },
   imageUrlById: Map<string, string>,
+  inventory: InventorySnapshot,
 ): Product {
   const data = obj.itemData
   const name = data?.name ?? ""
   const variations =
     data?.variations
-      ?.map(mapVariation)
+      ?.map((v) => mapVariation(v, inventory))
       .filter((v): v is ProductVariation => v !== null)
       .sort((a, b) => a.ordinal - b.ordinal) ?? []
 
@@ -93,6 +116,11 @@ function mapItem(
     ...(data?.categoryId ? [data.categoryId] : []),
   ]
 
+  // A product is in stock if at least one variation is available; if there are
+  // no variations we conservatively treat the product as available.
+  const inStock =
+    variations.length === 0 || variations.some((v) => v.inStock)
+
   return {
     id: obj.id,
     name,
@@ -104,6 +132,7 @@ function mapItem(
     variations,
     basePrice: variations[0]?.price ?? null,
     isArchived: Boolean(data?.isArchived),
+    inStock,
   }
 }
 
@@ -134,10 +163,32 @@ export async function fetchCatalog(): Promise<CatalogSnapshot> {
       }
     }
 
-    const products = items
-      .filter((it) => !it.itemData?.isArchived)
-      .map((it) => mapItem(it, imageUrlById))
+    const activeItems = items.filter((it) => !it.itemData?.isArchived)
 
+    // Collect tracked variation IDs so we only ask Square for inventory we
+    // actually use (calls billed per page).
+    const trackedVariationIds: string[] = []
+    for (const it of activeItems) {
+      for (const v of it.itemData?.variations ?? []) {
+        if (
+          v.type === "ITEM_VARIATION" &&
+          v.id &&
+          v.itemVariationData?.trackInventory === true
+        ) {
+          trackedVariationIds.push(v.id)
+        }
+      }
+    }
+
+    const inventory = await fetchInventoryCounts(trackedVariationIds)
+
+    const products = activeItems.map((it) =>
+      mapItem(it, imageUrlById, inventory),
+    )
+
+    // TODO (Sesion 3.1 follow-up): mirror imageUrls into Cloudflare R2 for
+    // permanence and a custom CDN domain. For now images are served directly
+    // from Square's CDN — see next.config remotePatterns.
     return { products, categories }
   })
 }
@@ -160,6 +211,18 @@ export async function getProductById(id: string): Promise<Product | null> {
       }
     }
 
-    return mapItem(main, imageUrlById)
+    const trackedIds: string[] = []
+    for (const v of main.itemData?.variations ?? []) {
+      if (
+        v.type === "ITEM_VARIATION" &&
+        v.id &&
+        v.itemVariationData?.trackInventory === true
+      ) {
+        trackedIds.push(v.id)
+      }
+    }
+    const inventory = await fetchInventoryCounts(trackedIds)
+
+    return mapItem(main, imageUrlById, inventory)
   })
 }

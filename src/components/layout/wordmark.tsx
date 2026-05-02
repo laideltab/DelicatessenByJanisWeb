@@ -8,9 +8,9 @@ interface WordmarkProps {
 }
 
 const sizes = {
-  sm: { whisk: "h-8", wordmark: "h-5", gap: "gap-2.5" },
-  md: { whisk: "h-12", wordmark: "h-8", gap: "gap-3" },
-  lg: { whisk: "h-20", wordmark: "h-14", gap: "gap-5" },
+  sm: { whisk: "h-7", wordmark: "h-7", gap: "gap-2.5" },
+  md: { whisk: "h-10", wordmark: "h-11", gap: "gap-3" },
+  lg: { whisk: "h-16", wordmark: "h-[4.5rem]", gap: "gap-5" },
 } as const
 
 const WHISK_RATIO = 1080 / 592.94
