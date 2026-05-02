@@ -1,22 +1,21 @@
+import { siteConfig } from "@/lib/site-config"
+
 /**
  * Schema.org Bakery + LocalBusiness JSON-LD for the homepage.
- * TODO: replace address, geo, telephone, openingHours with real data before prod.
+ * TODO: replace placeholder address, geo, telephone, openingHours with
+ * confirmed data before launch.
  */
 export function LocalBusinessJsonLd() {
   const data = {
     "@context": "https://schema.org",
     "@type": "Bakery",
-    name: "Delicatessen by Janis",
-    description:
-      "Artisan cakes, coffee, and delicatessen baked every morning by Janis.",
-    url: "https://www.delicatessenbyjanis.com",
-    image: "https://www.delicatessenbyjanis.com/brand/logo.png",
+    name: siteConfig.name,
+    description: siteConfig.description,
+    url: siteConfig.url,
+    image: `${siteConfig.url}/brand/logo.png`,
     address: {
       "@type": "PostalAddress",
-      streetAddress: "International Mall",
-      addressLocality: "Tampa",
-      addressRegion: "FL",
-      addressCountry: "US",
+      ...siteConfig.address,
     },
     openingHoursSpecification: [
       {
@@ -38,10 +37,7 @@ export function LocalBusinessJsonLd() {
         closes: "17:00",
       },
     ],
-    sameAs: [
-      "https://instagram.com/delicatessenbyjanis",
-      "https://facebook.com/delicatessenbyjanis",
-    ],
+    sameAs: [siteConfig.social.instagram, siteConfig.social.facebook],
   }
 
   return (
