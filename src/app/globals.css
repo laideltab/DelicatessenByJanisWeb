@@ -1,26 +1,112 @@
 @import "tailwindcss";
 
+/*
+  Brand: Delicatessen by Janis — paleta oficial (Intl Mall Design Playbook)
+  Vintage · French · Feminine
+
+  Solo tres colores de marca: April Blush + Strawberry Sorbet + Bit of Sugar.
+  Negro (del logo) y blanco como neutros para tipografía / cards.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand — los únicos tres tonos permitidos */
+  --color-blush-100: #f6d0d8;  /* April Blush — Behr */
+  --color-blush-200: #f4becf;  /* Strawberry Sorbet — Benjamin Moore */
+  --color-sugar-100: #f4f2ec;  /* Bit of Sugar — Behr */
+
+  /* Tipografía (negro del logo SVG) */
+  --color-ink-700: #3a3a3a;
+  --color-ink-800: #212121;
+  --color-ink-900: #0a0a0a;
+
+  /* Semantic tokens */
+  --background: var(--color-sugar-100);
+  --foreground: var(--color-ink-800);
+  --muted: var(--color-blush-100);
+  --muted-foreground: var(--color-ink-700);
+  --card: #ffffff;
+  --card-foreground: var(--color-ink-800);
+  --border: var(--color-blush-100);
+  --input: var(--color-blush-100);
+  --ring: var(--color-blush-200);
+
+  /* Primary: negro elegante (boutique francesa) */
+  --primary: var(--color-ink-800);
+  --primary-foreground: #ffffff;
+  --primary-hover: var(--color-ink-900);
+
+  /* Accent: Strawberry Sorbet — el pop de marca */
+  --accent: var(--color-blush-200);
+  --accent-foreground: var(--color-ink-800);
+  --accent-hover: var(--color-blush-100);
+
+  --destructive: #b3261e;
+  --destructive-foreground: #ffffff;
+
+  --radius: 0.625rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-hover: var(--accent-hover);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-blush-100: var(--color-blush-100);
+  --color-blush-200: var(--color-blush-200);
+  --color-sugar-100: var(--color-sugar-100);
+
+  --color-ink-700: var(--color-ink-700);
+  --color-ink-800: var(--color-ink-800);
+  --color-ink-900: var(--color-ink-900);
+
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    border-color: var(--border);
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display), ui-serif, Georgia, serif;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background: var(--color-blush-200);
+    color: var(--color-ink-800);
+  }
 }

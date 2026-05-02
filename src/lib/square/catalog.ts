@@ -1,85 +1,165 @@
-import { squareClient } from './client'
+import type { CatalogObject, CatalogItem, CatalogItemVariation, Money } from "square"
+import { getSquareClient } from "./client"
+import { withSquare } from "./errors"
+import { slugify } from "@/lib/utils"
 
-export type SquareProduct = {
+export type Money_ = { amount: number; currency: string }
+
+export type ProductVariation = {
   id: string
   name: string
+  price: Money_ | null
+  sku: string | null
+  ordinal: number
+}
+
+export type Product = {
+  id: string
+  name: string
+  slug: string
   description: string
-  price: number
-  currency: string
-  imageUrl: string | null
-  categoryId: string | null
-  available: boolean
-  variations: SquareVariation[]
+  descriptionHtml: string | null
+  imageUrls: string[]
+  categoryIds: string[]
+  variations: ProductVariation[]
+  basePrice: Money_ | null
+  isArchived: boolean
 }
 
-export type SquareVariation = {
+export type Category = {
   id: string
   name: string
-  price: number
-  currency: string
+  slug: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapVariation(v: any): SquareVariation {
+const ZERO_DECIMAL_CURRENCIES = new Set([
+  "BIF", "CLP", "DJF", "GNF", "JPY", "KMF", "KRW", "MGA",
+  "PYG", "RWF", "UGX", "VND", "VUV", "XAF", "XOF", "XPF",
+])
+
+function moneyToFloat(money: Money | null | undefined): Money_ | null {
+  if (!money?.amount || !money.currency) return null
+  const amount = Number(money.amount)
+  const divisor = ZERO_DECIMAL_CURRENCIES.has(money.currency) ? 1 : 100
+  return { amount: amount / divisor, currency: money.currency }
+}
+
+function isItem(o: CatalogObject): o is CatalogObject & { type: "ITEM"; itemData?: CatalogItem } {
+  return o.type === "ITEM"
+}
+function isImage(o: CatalogObject): o is CatalogObject & { type: "IMAGE" } {
+  return o.type === "IMAGE"
+}
+function isCategory(o: CatalogObject): o is CatalogObject & { type: "CATEGORY" } {
+  return o.type === "CATEGORY"
+}
+function isVariation(
+  o: CatalogObject,
+): o is CatalogObject & { type: "ITEM_VARIATION"; itemVariationData?: CatalogItemVariation } {
+  return o.type === "ITEM_VARIATION"
+}
+
+function mapVariation(obj: CatalogObject): ProductVariation | null {
+  if (!isVariation(obj)) return null
+  const data = obj.itemVariationData
   return {
-    id: v.id ?? '',
-    name: v.itemVariationData?.name ?? '',
-    price: Number(v.itemVariationData?.priceMoney?.amount ?? 0) / 100,
-    currency: v.itemVariationData?.priceMoney?.currency ?? 'USD',
+    id: obj.id,
+    name: data?.name ?? "",
+    price: moneyToFloat(data?.priceMoney),
+    sku: data?.sku ?? null,
+    ordinal: data?.ordinal ?? 0,
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapItem(item: any): SquareProduct {
-  const data = item.itemData ?? {}
-  const firstVariation = data.variations?.[0]?.itemVariationData
+function mapItem(
+  obj: CatalogObject & { type: "ITEM" },
+  imageUrlById: Map<string, string>,
+): Product {
+  const data = obj.itemData
+  const name = data?.name ?? ""
+  const variations =
+    data?.variations
+      ?.map(mapVariation)
+      .filter((v): v is ProductVariation => v !== null)
+      .sort((a, b) => a.ordinal - b.ordinal) ?? []
+
+  const imageIds = data?.imageIds ?? []
+  const imageUrls = imageIds
+    .map((id) => imageUrlById.get(id))
+    .filter((u): u is string => Boolean(u))
+
+  const categoryIds = [
+    ...(data?.categories?.map((c) => c.id).filter((id): id is string => Boolean(id)) ?? []),
+    ...(data?.categoryId ? [data.categoryId] : []),
+  ]
+
   return {
-    id: item.id ?? '',
-    name: data.name ?? '',
-    description: data.description ?? '',
-    price: Number(firstVariation?.priceMoney?.amount ?? 0) / 100,
-    currency: firstVariation?.priceMoney?.currency ?? 'USD',
-    imageUrl: null,
-    categoryId: data.categoryId ?? null,
-    available: true,
-    variations: (data.variations ?? []).map(mapVariation),
+    id: obj.id,
+    name,
+    slug: slugify(name),
+    description: data?.descriptionPlaintext ?? data?.description ?? "",
+    descriptionHtml: data?.descriptionHtml ?? null,
+    imageUrls,
+    categoryIds: Array.from(new Set(categoryIds)),
+    variations,
+    basePrice: variations[0]?.price ?? null,
+    isArchived: Boolean(data?.isArchived),
   }
 }
 
-export async function getAllProducts(): Promise<SquareProduct[]> {
-  const response = await squareClient.catalog.list({ types: 'ITEM' })
-  const items: SquareProduct[] = []
-  for await (const item of response) {
-    if (item.type === 'ITEM' && item.itemData) {
-      items.push(mapItem(item))
+export type CatalogSnapshot = {
+  products: Product[]
+  categories: Category[]
+}
+
+export async function fetchCatalog(): Promise<CatalogSnapshot> {
+  return withSquare("catalog.list", async () => {
+    const client = getSquareClient()
+    const page = await client.catalog.list({ types: "ITEM,IMAGE,CATEGORY" })
+
+    const items: (CatalogObject & { type: "ITEM" })[] = []
+    const imageUrlById = new Map<string, string>()
+    const categories: Category[] = []
+
+    for await (const obj of page) {
+      if (!obj.id) continue
+      if (isItem(obj)) {
+        items.push(obj)
+      } else if (isImage(obj)) {
+        const url = obj.imageData?.url
+        if (url) imageUrlById.set(obj.id, url)
+      } else if (isCategory(obj)) {
+        const name = obj.categoryData?.name
+        if (name) categories.push({ id: obj.id, name, slug: slugify(name) })
+      }
     }
-  }
-  return items
+
+    const products = items
+      .filter((it) => !it.itemData?.isArchived)
+      .map((it) => mapItem(it, imageUrlById))
+
+    return { products, categories }
+  })
 }
 
-export async function getProductById(id: string): Promise<SquareProduct | null> {
-  try {
-    const response = await squareClient.catalog.object.get({
+export async function getProductById(id: string): Promise<Product | null> {
+  return withSquare("catalog.object.get", async () => {
+    const client = getSquareClient()
+    const response = await client.catalog.object.get({
       objectId: id,
       includeRelatedObjects: true,
     })
-    const item = response.object
-    if (!item || item.type !== 'ITEM') return null
-    return mapItem(item)
-  } catch {
-    return null
-  }
-}
 
-export async function getCategories(): Promise<{ id: string; name: string }[]> {
-  const categories: { id: string; name: string }[] = []
-  const response = await squareClient.catalog.list({ types: 'CATEGORY' })
-  for await (const cat of response) {
-    categories.push({
-      id: cat.id ?? '',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      name: (cat as any).categoryData?.name ?? '',
-    })
-  }
-  return categories
+    const main = response.object
+    if (!main || !isItem(main)) return null
+
+    const imageUrlById = new Map<string, string>()
+    for (const related of response.relatedObjects ?? []) {
+      if (isImage(related) && related.imageData?.url) {
+        imageUrlById.set(related.id, related.imageData.url)
+      }
+    }
+
+    return mapItem(main, imageUrlById)
+  })
 }

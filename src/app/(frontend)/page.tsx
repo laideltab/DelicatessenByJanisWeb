@@ -1,30 +1,75 @@
-import Image from "next/image";
+import type { Metadata } from "next"
+import { fetchCatalog, type Category, type Product } from "@/lib/square/catalog"
+import { Hero } from "@/components/home/hero"
+import { Specialties } from "@/components/home/specialties"
+import { FeaturedProducts } from "@/components/home/featured-products"
+import { AboutJanis } from "@/components/home/about-janis"
+import { VisitUs } from "@/components/home/visit-us"
+import { Newsletter } from "@/components/home/newsletter"
+import { LocalBusinessJsonLd } from "@/components/seo/local-business-jsonld"
 
-export default function Home() {
+export const revalidate = 60
+
+export const metadata: Metadata = {
+  title: "Bakery & Coffee Shop",
+  description:
+    "Artisan cakes, coffee, and delicatessen baked every morning by Janis with hand-selected ingredients. Tampa, FL.",
+  openGraph: {
+    title: "Delicatessen by Janis | Bakery & Coffee Shop",
+    description:
+      "Artisan cakes, coffee, and delicatessen baked every morning by Janis.",
+    type: "website",
+    locale: "en_US",
+    siteName: "Delicatessen by Janis",
+  },
+}
+
+type CategoryWithCount = Category & { productCount: number }
+type FeaturedProduct = Product & { categorySlug: string | null }
+
+async function getHomeData(): Promise<{
+  categories: CategoryWithCount[]
+  featured: FeaturedProduct[]
+}> {
+  try {
+    const { products, categories } = await fetchCatalog()
+    const slugById = new Map(categories.map((c) => [c.id, c.slug]))
+    const countById = new Map<string, number>()
+    for (const p of products) {
+      for (const cid of p.categoryIds) {
+        countById.set(cid, (countById.get(cid) ?? 0) + 1)
+      }
+    }
+    return {
+      categories: categories.map((c) => ({
+        ...c,
+        productCount: countById.get(c.id) ?? 0,
+      })),
+      featured: products.slice(0, 4).map((p) => ({
+        ...p,
+        categorySlug: p.categoryIds[0]
+          ? slugById.get(p.categoryIds[0]) ?? null
+          : null,
+      })),
+    }
+  } catch (err) {
+    console.error("[home] Square catalog unavailable:", err)
+    return { categories: [], featured: [] }
+  }
+}
+
+export default async function HomePage() {
+  const { categories, featured } = await getHomeData()
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            Delicatessen by Janis
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Sitio en construcción. El admin está en{" "}
-            <a href="/admin" className="font-medium text-zinc-950 dark:text-zinc-50">
-              /admin
-            </a>
-            .
-          </p>
-        </div>
-      </main>
-    </div>
-  );
+    <>
+      <LocalBusinessJsonLd />
+      <Hero />
+      <Specialties categories={categories} />
+      <FeaturedProducts products={featured} />
+      <AboutJanis />
+      <VisitUs />
+      <Newsletter />
+    </>
+  )
 }
