@@ -1,10 +1,11 @@
 import type { CollectionConfig } from 'payload'
 import { isAdminOrEditor } from '@/lib/access/roles'
 
-export const Banners: CollectionConfig = {
-  slug: 'banners',
+export const Gallery: CollectionConfig = {
+  slug: 'gallery',
   admin: {
     useAsTitle: 'title',
+    defaultColumns: ['title', 'category', 'order', 'active'],
   },
   access: {
     read: () => true,
@@ -20,11 +21,6 @@ export const Banners: CollectionConfig = {
       required: true,
     },
     {
-      name: 'subtitle',
-      type: 'text',
-      label: 'Subtitle',
-    },
-    {
       name: 'image',
       type: 'upload',
       relationTo: 'media',
@@ -32,27 +28,21 @@ export const Banners: CollectionConfig = {
       required: true,
     },
     {
-      name: 'cta',
-      type: 'group',
-      label: 'Call to Action Button',
-      fields: [
-        {
-          name: 'text',
-          type: 'text',
-          label: 'Button Text',
-        },
-        {
-          name: 'url',
-          type: 'text',
-          label: 'Button URL',
-        },
-      ],
+      name: 'caption',
+      type: 'text',
+      label: 'Caption',
     },
     {
-      name: 'active',
-      type: 'checkbox',
-      label: 'Active',
-      defaultValue: true,
+      name: 'category',
+      type: 'select',
+      label: 'Category',
+      defaultValue: 'shop',
+      required: true,
+      options: [
+        { label: 'Shop / Locale', value: 'shop' },
+        { label: 'Products', value: 'products' },
+        { label: 'Events', value: 'events' },
+      ],
     },
     {
       name: 'order',
@@ -60,5 +50,13 @@ export const Banners: CollectionConfig = {
       label: 'Display Order',
       defaultValue: 0,
     },
+    {
+      name: 'active',
+      type: 'checkbox',
+      label: 'Show on site',
+      defaultValue: true,
+    },
   ],
 }
+
+export { Gallery as Galeria }

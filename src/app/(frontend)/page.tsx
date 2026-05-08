@@ -1,6 +1,10 @@
 import type { Metadata } from "next"
 import type { Product } from "@/lib/square/catalog"
 import { getCatalogGrouped } from "@/lib/square/queries"
+import {
+  getProductOverridesByItemId,
+  type ProductOverride,
+} from "@/lib/square/product-overrides"
 import { Hero } from "@/components/home/hero"
 import { Marquee } from "@/components/home/marquee"
 import { Specialties, type SpecialtyCard } from "@/components/home/specialties"
@@ -28,18 +32,52 @@ export const metadata: Metadata = {
 
 type FeaturedProduct = Product & { categorySlug: string | null }
 
+function withCategorySlug(
+  p: Product,
+  idToCategory: Map<string, { slug: string }>,
+): FeaturedProduct {
+  const categorySlug =
+    p.categoryIds
+      .map((id) => idToCategory.get(id)?.slug)
+      .find((s): s is string => Boolean(s)) ?? null
+  return { ...p, categorySlug }
+}
+
 /**
- * Round-robin pick: walk categories in order, take one product from each, loop
- * until we have `count` products. Gives the homepage variety instead of N
- * products from the same category.
+ * Pick featured products. Manually-featured overrides win first (sorted by
+ * displayOrder), then round-robin across categories fills the remaining slots
+ * so the homepage stays varied even if Janis only pins one or two.
  */
 function pickFeatured(
   categories: { products: Product[] }[],
   idToCategory: Map<string, { slug: string }>,
+  overrides: Map<string, ProductOverride>,
   count = 4,
 ): FeaturedProduct[] {
-  const queues = categories.map((c) => [...c.products])
+  const seen = new Set<string>()
   const out: FeaturedProduct[] = []
+
+  // 1) Manually featured first.
+  const allProducts = categories.flatMap((c) => c.products)
+  const manuallyFeatured = allProducts
+    .filter((p) => overrides.get(p.id)?.featuredOnHomepage)
+    .sort((a, b) => {
+      const ao = overrides.get(a.id)?.displayOrder ?? 0
+      const bo = overrides.get(b.id)?.displayOrder ?? 0
+      if (ao !== bo) return ao - bo
+      return a.name.localeCompare(b.name)
+    })
+
+  for (const p of manuallyFeatured) {
+    if (out.length >= count) break
+    out.push(withCategorySlug(p, idToCategory))
+    seen.add(p.id)
+  }
+
+  // 2) Round-robin fallback.
+  const queues = categories.map((c) =>
+    c.products.filter((p) => !seen.has(p.id)),
+  )
   let exhausted = 0
   while (out.length < count && exhausted < queues.length) {
     exhausted = 0
@@ -50,18 +88,17 @@ function pickFeatured(
         exhausted += 1
         continue
       }
-      const categorySlug =
-        next.categoryIds
-          .map((id) => idToCategory.get(id)?.slug)
-          .find((s): s is string => Boolean(s)) ?? null
-      out.push({ ...next, categorySlug })
+      out.push(withCategorySlug(next, idToCategory))
     }
   }
   return out
 }
 
 export default async function HomePage() {
-  const { categories, idToCategory } = await getCatalogGrouped()
+  const [{ categories, idToCategory }, overrides] = await Promise.all([
+    getCatalogGrouped(),
+    getProductOverridesByItemId(),
+  ])
 
   const specialtiesData: SpecialtyCard[] = categories.map((c) => ({
     id: c.id,
@@ -71,7 +108,7 @@ export default async function HomePage() {
     coverImage: c.products.find((p) => p.imageUrls[0])?.imageUrls[0] ?? null,
   }))
 
-  const featured = pickFeatured(categories, idToCategory, 4)
+  const featured = pickFeatured(categories, idToCategory, overrides, 4)
 
   return (
     <>

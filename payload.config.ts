@@ -12,7 +12,12 @@ import { Banners } from './src/collections/Banners'
 import { Promotions } from './src/collections/Promociones'
 import { Blog } from './src/collections/Blog'
 import { Testimonials } from './src/collections/Testimonios'
+import { Gallery } from './src/collections/Galeria'
+import { SpecialOrders } from './src/collections/PedidosEspeciales'
+import { OrderNotes } from './src/collections/OrderNotes'
+import { ProductOverrides } from './src/collections/ProductOverrides'
 import { SiteConfig } from './src/globals/SiteConfig'
+import { resendPayloadAdapter } from './src/lib/email/payload-adapter'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -26,10 +31,47 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    components: {
+      afterNavLinks: [
+        '/src/components/admin/orders/nav-link.tsx#default',
+        '/src/components/admin/products/nav-link.tsx#default',
+      ],
+      views: {
+        squareOrdersList: {
+          Component: '/src/components/admin/orders/list-view.tsx#default',
+          path: '/orders',
+          exact: true,
+          meta: { title: 'Square Orders' },
+        },
+        squareOrderDetail: {
+          Component: '/src/components/admin/orders/detail-view.tsx#default',
+          path: '/orders/:orderId',
+          meta: { title: 'Order Detail' },
+        },
+        squareProductsList: {
+          Component: '/src/components/admin/products/list-view.tsx#default',
+          path: '/products',
+          exact: true,
+          meta: { title: 'Square Products' },
+        },
+      },
+    },
   },
-  collections: [Users, Media, Banners, Promotions, Blog, Testimonials],
+  collections: [
+    Users,
+    Media,
+    Banners,
+    Promotions,
+    Blog,
+    Testimonials,
+    Gallery,
+    SpecialOrders,
+    OrderNotes,
+    ProductOverrides,
+  ],
   globals: [SiteConfig],
   editor: lexicalEditor(),
+  email: resendPayloadAdapter,
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

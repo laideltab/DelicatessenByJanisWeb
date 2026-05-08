@@ -1,10 +1,12 @@
 import type { GlobalConfig } from 'payload'
+import { isAdminOrEditor } from '@/lib/access/roles'
 
 export const SiteConfig: GlobalConfig = {
   slug: 'site-config',
   label: 'Site Configuration',
   access: {
     read: () => true,
+    update: isAdminOrEditor,
   },
   fields: [
     {

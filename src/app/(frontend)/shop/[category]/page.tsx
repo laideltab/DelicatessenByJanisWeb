@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getCatalog, getCatalogGrouped } from "@/lib/square/queries"
+import { getProductOverridesByItemId } from "@/lib/square/product-overrides"
 import { ProductCard, ProductGrid } from "@/components/shop/product-card"
 import { Breadcrumb } from "@/components/shop/breadcrumb"
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld"
@@ -45,12 +46,24 @@ export default async function CategoryPage({
   params: Promise<RouteParams>
 }) {
   const { category: slug } = await params
-  const { categories } = await getCatalogGrouped()
+  const [{ categories }, overrides] = await Promise.all([
+    getCatalogGrouped(),
+    getProductOverridesByItemId(),
+  ])
   const category = categories.find((c) => c.slug === slug)
 
   if (!category) notFound()
 
+  // Sort by override displayOrder ASC; equal orders preserve Square's order.
   const inCategory = category.products
+    .map((p, i) => ({ p, i }))
+    .sort((a, b) => {
+      const ao = overrides.get(a.p.id)?.displayOrder ?? 0
+      const bo = overrides.get(b.p.id)?.displayOrder ?? 0
+      if (ao !== bo) return ao - bo
+      return a.i - b.i
+    })
+    .map(({ p }) => p)
 
   return (
     <>

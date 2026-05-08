@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { isAdminOrEditor } from '@/lib/access/roles'
 
 export const Promotions: CollectionConfig = {
   slug: 'promotions',
@@ -7,6 +8,9 @@ export const Promotions: CollectionConfig = {
   },
   access: {
     read: () => true,
+    create: isAdminOrEditor,
+    update: isAdminOrEditor,
+    delete: isAdminOrEditor,
   },
   fields: [
     {

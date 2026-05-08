@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server"
+import { getPayload } from "payload"
+import config from "@payload-config"
 import { specialOrderSchema } from "@/lib/schemas/special-orders"
+import { sendSpecialOrderAdminEmail } from "@/lib/email/send-special-order"
 
 export const runtime = "nodejs"
 
@@ -19,9 +22,32 @@ export async function POST(req: Request) {
     )
   }
 
-  // TODO (Sesion 3.4): forward to Resend + persist to Payload custom-orders
-  // collection so Janis sees them in the admin. Logging only for now.
-  console.info("[special-orders] new request:", parsed.data)
+  const reference = parsed.data.reference?.trim() || undefined
+
+  try {
+    const payload = await getPayload({ config })
+    await payload.create({
+      collection: "special-orders",
+      data: {
+        ...parsed.data,
+        reference,
+        status: "new",
+      },
+      // Public form submission — bypass Payload's auth-only default.
+      overrideAccess: true,
+    })
+  } catch (err) {
+    console.error("[special-orders] persist failed:", err)
+    return NextResponse.json(
+      {
+        error:
+          "We could not save your request. Please try again, or call us to place the order.",
+      },
+      { status: 500 },
+    )
+  }
+
+  await sendSpecialOrderAdminEmail({ ...parsed.data, reference })
 
   return NextResponse.json({ ok: true })
 }

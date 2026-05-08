@@ -1,8 +1,15 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { RichText } from "@payloadcms/richtext-lexical/react"
 import { getCatalogGrouped } from "@/lib/square/queries"
 import type { Product } from "@/lib/square/catalog"
+import {
+  asMedia,
+  getProductOverride,
+  lexicalHasText,
+  type ProductOverride,
+} from "@/lib/square/product-overrides"
 import { Breadcrumb } from "@/components/shop/breadcrumb"
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld"
 import { ProductJsonLd } from "@/components/seo/product-jsonld"
@@ -38,6 +45,7 @@ async function resolveProduct(
   category: { id: string; name: string; slug: string }
   product: Product
   related: Product[]
+  override: ProductOverride | null
 } | null> {
   const { categories, slugToCategory } = await getCatalogGrouped()
   const category = slugToCategory.get(categorySlug)
@@ -53,7 +61,9 @@ async function resolveProduct(
     .filter((p) => p.id !== product.id)
     .slice(0, 4)
 
-  return { category, product, related }
+  const override = await getProductOverride(product.id)
+
+  return { category, product, related, override }
 }
 
 export async function generateMetadata({
@@ -65,22 +75,27 @@ export async function generateMetadata({
   const data = await resolveProduct(category, product)
   if (!data) return {}
 
-  const { product: p } = data
+  const { product: p, override } = data
   const priceLabel = p.basePrice
     ? `From ${formatPrice(p.basePrice.amount, p.basePrice.currency)}.`
     : ""
-  const description =
+  const fallbackDescription =
     [p.description, priceLabel].filter(Boolean).join(" ").slice(0, 160) ||
     `${p.name} — handcrafted by Delicatessen by Janis.`
+
+  const title = override?.seo?.metaTitle?.trim() || p.name
+  const description =
+    override?.seo?.metaDescription?.trim() || fallbackDescription
   const path = `/shop/${data.category.slug}/${p.slug}`
-  const ogImage = p.imageUrls[0]
+  const extraImage = asMedia(override?.additionalImage)?.url
+  const ogImage = p.imageUrls[0] ?? extraImage
 
   return {
-    title: p.name,
+    title,
     description,
     alternates: { canonical: path },
     openGraph: {
-      title: `${p.name} | Delicatessen by Janis`,
+      title: `${title} | Delicatessen by Janis`,
       description,
       type: "website",
       url: path,
@@ -98,8 +113,15 @@ export default async function ProductPage({
   const data = await resolveProduct(catSlug, prodSlug)
   if (!data) notFound()
 
-  const { category, product, related } = data
+  const { category, product, related, override } = data
   const path = `/shop/${category.slug}/${product.slug}`
+
+  const additionalImage = asMedia(override?.additionalImage)
+  const galleryImages = additionalImage?.url
+    ? [...product.imageUrls, additionalImage.url]
+    : product.imageUrls
+  const showLongDescription =
+    override?.longDescription && lexicalHasText(override.longDescription)
 
   return (
     <>
@@ -132,7 +154,7 @@ export default async function ProductPage({
       >
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
           <ProductGallery
-            images={product.imageUrls}
+            images={galleryImages}
             productName={product.name}
           />
 
@@ -168,6 +190,12 @@ export default async function ProductPage({
                 <p className="whitespace-pre-line leading-relaxed">
                   {product.description}
                 </p>
+              </div>
+            ) : null}
+
+            {showLongDescription ? (
+              <div className="prose prose-sm max-w-none text-ink-700">
+                <RichText data={override.longDescription as never} />
               </div>
             ) : null}
 
