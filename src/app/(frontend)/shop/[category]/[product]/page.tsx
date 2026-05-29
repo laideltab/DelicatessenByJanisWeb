@@ -99,7 +99,15 @@ export async function generateMetadata({
       description,
       type: "website",
       url: path,
-      images: ogImage ? [{ url: ogImage }] : undefined,
+      // Only set explicit images when Square has one. Otherwise omit the key so
+      // Next falls back to the colocated opengraph-image.tsx (dynamic, branded).
+      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | Delicatessen by Janis`,
+      description,
+      ...(ogImage ? { images: [ogImage] } : {}),
     },
   }
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Cake, Calendar, Clock4 } from "lucide-react"
 import { Breadcrumb } from "@/components/shop/breadcrumb"
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld"
+import { FaqJsonLd } from "@/components/seo/faq-jsonld"
 import { SpecialOrdersForm } from "@/components/forms/special-orders-form"
 
 export const metadata: Metadata = {
@@ -15,7 +16,40 @@ export const metadata: Metadata = {
     type: "website",
     url: "/special-orders",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Special Orders | Delicatessen by Janis",
+    description: "Request a custom cake or catering for your event.",
+  },
 }
+
+const faqs = [
+  {
+    question: "How far in advance do I need to order a custom cake?",
+    answer:
+      "We require at least 5 calendar days' notice for special orders so we can source ingredients and finalize the design with you.",
+  },
+  {
+    question: "Is a deposit required?",
+    answer:
+      "Yes — special orders require a 50% deposit at the time of design approval. The remaining balance is due at pickup.",
+  },
+  {
+    question: "Can you accommodate dietary restrictions?",
+    answer:
+      "We do our best to accommodate gluten-free, dairy-free, and nut-free requests on advance notice. Our kitchen handles wheat, dairy, eggs, and tree nuts, so we cannot guarantee an allergen-free environment.",
+  },
+  {
+    question: "Do you deliver, or is pickup only?",
+    answer:
+      "We offer pickup at our shop in Miami International Mall. Local delivery is available within Doral and the Miami metro area for an additional fee, calculated based on distance.",
+  },
+  {
+    question: "Can I cancel a special order?",
+    answer:
+      "Special-order deposits are refundable up to 7 days before the event date. Cancellations within 7 days forfeit the deposit, since the kitchen has typically begun prep.",
+  },
+]
 
 const steps = [
   {
@@ -44,6 +78,7 @@ export default function SpecialOrdersPage() {
           { name: "Special Orders", path: "/special-orders" },
         ]}
       />
+      <FaqJsonLd items={faqs} />
 
       <div className="bg-sugar-100 py-10 sm:py-12">
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -139,6 +174,51 @@ export default function SpecialOrdersPage() {
             <span className="italic text-ink-800"> what you&rsquo;re dreaming up.</span>
           </h2>
           <SpecialOrdersForm />
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section
+        aria-labelledby="faq-heading"
+        className="border-t border-blush-200/50 bg-blush-100 py-20 sm:py-24"
+      >
+        <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 text-center">
+            <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.32em] text-ink-800">
+              <span className="h-px w-6 bg-brass-500" aria-hidden />
+              Frequently asked
+              <span className="h-px w-6 bg-brass-500" aria-hidden />
+            </p>
+            <h2
+              id="faq-heading"
+              className="mt-4 font-display text-3xl leading-[1.05] tracking-tight text-ink-900 sm:text-4xl"
+            >
+              Everything you might
+              <span className="italic text-ink-800"> want to ask.</span>
+            </h2>
+          </div>
+
+          <dl className="space-y-4">
+            {faqs.map((f) => (
+              <details
+                key={f.question}
+                className="group rounded-2xl bg-card p-6 ring-1 ring-blush-200/60 shadow-sm open:ring-brass-500/60 sm:p-7"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-lg text-ink-900 sm:text-xl">
+                  <dt className="flex-1">{f.question}</dt>
+                  <span
+                    aria-hidden
+                    className="text-brass-600 transition-transform group-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </summary>
+                <dd className="mt-3 text-base leading-relaxed text-muted-foreground">
+                  {f.answer}
+                </dd>
+              </details>
+            ))}
+          </dl>
         </div>
       </section>
     </>

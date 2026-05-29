@@ -28,14 +28,22 @@ export async function generateMetadata({
 
   const title = category.name
   const description = `Discover our ${category.name.toLowerCase()} — handcrafted by Janis with hand-selected ingredients.`
+  const path = `/shop/${slug}`
 
   return {
     title,
     description,
+    alternates: { canonical: path },
     openGraph: {
       title: `${title} | Delicatessen by Janis`,
       description,
       type: "website",
+      url: path,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | Delicatessen by Janis`,
+      description,
     },
   }
 }
@@ -123,13 +131,16 @@ export default async function CategoryPage({
               Nothing in this category yet — check back soon.
             </p>
           ) : (
-            <ProductGrid>
-              {inCategory.map((p) => (
-                <li key={p.id}>
-                  <ProductCard product={p} categorySlug={category.slug} />
-                </li>
-              ))}
-            </ProductGrid>
+            <>
+              <h2 className="sr-only">Products in {category.name}</h2>
+              <ProductGrid>
+                {inCategory.map((p) => (
+                  <li key={p.id}>
+                    <ProductCard product={p} categorySlug={category.slug} />
+                  </li>
+                ))}
+              </ProductGrid>
+            </>
           )}
         </div>
       </section>

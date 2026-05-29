@@ -17,6 +17,12 @@ export const metadata: Metadata = {
     type: "website",
     url: "/about",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Janis | Delicatessen by Janis",
+    description:
+      "The story behind Delicatessen by Janis — a French-inspired bakery in Doral, FL.",
+  },
 }
 
 const values = [

@@ -21,6 +21,12 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { default as default_0f6d8b0f97c66dc38a90a25eba584b66 } from '../../../../src/components/admin/orders/nav-link.tsx'
+import { default as default_8eb06d8f0f2714c243e828a45820d36e } from '../../../../src/components/admin/products/nav-link.tsx'
+import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
+import { default as default_bc5ce4f03bbcda72f99edc58fe13065f } from '../../../../src/components/admin/orders/list-view.tsx'
+import { default as default_43c7ae41aad64a3eb762207fa064f260 } from '../../../../src/components/admin/orders/detail-view.tsx'
+import { default as default_fa2c38d2701b34b83b78889f0c3c0103 } from '../../../../src/components/admin/products/list-view.tsx'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -48,5 +54,11 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "/src/components/admin/orders/nav-link.tsx#default": default_0f6d8b0f97c66dc38a90a25eba584b66,
+  "/src/components/admin/products/nav-link.tsx#default": default_8eb06d8f0f2714c243e828a45820d36e,
+  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
+  "/src/components/admin/orders/list-view.tsx#default": default_bc5ce4f03bbcda72f99edc58fe13065f,
+  "/src/components/admin/orders/detail-view.tsx#default": default_43c7ae41aad64a3eb762207fa064f260,
+  "/src/components/admin/products/list-view.tsx#default": default_fa2c38d2701b34b83b78889f0c3c0103,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

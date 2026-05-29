@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   title: "Bakery & Coffee Shop",
   description:
     "Artisan cakes, coffee, and delicatessen baked every morning by Janis with hand-selected ingredients. Miami International Mall, Doral, FL.",
+  alternates: { canonical: "/" },
   openGraph: {
     title: "Delicatessen by Janis | Bakery & Coffee Shop",
     description:
@@ -27,6 +28,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "Delicatessen by Janis",
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Delicatessen by Janis | Bakery & Coffee Shop",
+    description:
+      "Artisan cakes, coffee, and delicatessen baked every morning by Janis.",
   },
 }
 

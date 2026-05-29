@@ -16,6 +16,11 @@ export const metadata: Metadata = {
     type: "website",
     url: "/contact",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact | Delicatessen by Janis",
+    description: "Reach out to Delicatessen by Janis.",
+  },
 }
 
 const hours = [

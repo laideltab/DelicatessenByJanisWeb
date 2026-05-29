@@ -11,11 +11,19 @@ export const metadata: Metadata = {
   title: "Menu",
   description:
     "The full Delicatessen by Janis menu — cakes, pastries, drinks, and savories, all in one place.",
+  alternates: { canonical: "/menu" },
   openGraph: {
     title: "Menu | Delicatessen by Janis",
     description:
       "The full Delicatessen by Janis menu — cakes, pastries, drinks, and savories, all in one place.",
     type: "website",
+    url: "/menu",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Menu | Delicatessen by Janis",
+    description:
+      "The full Delicatessen by Janis menu — cakes, pastries, drinks, and savories, all in one place.",
   },
 }
 

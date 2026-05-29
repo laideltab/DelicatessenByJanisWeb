@@ -18,6 +18,12 @@ export const metadata: Metadata = {
     type: "website",
     url: "/memberships",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Memberships | Delicatessen by Janis",
+    description:
+      "Join the Delicatessen by Janis membership — monthly cakes, members-only flavors, and event perks.",
+  },
 }
 
 type Tier = {
