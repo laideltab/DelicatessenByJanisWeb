@@ -141,6 +141,14 @@
 }
 
 @layer components {
+  /* Apple Pay mark — WebKit draws the button; we only size it. Hidden by
+     the checkout when Apple Pay isn't available on the device. */
+  .apple-pay-button {
+    -webkit-appearance: -apple-pay-button;
+    -apple-pay-button-type: order;
+    -apple-pay-button-style: black;
+  }
+
   /* Long-form rich text from Payload (blog posts, long descriptions). */
   .rich-text {
     color: var(--color-ink-700);

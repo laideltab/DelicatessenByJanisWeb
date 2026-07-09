@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { ArrowRight, Loader2, Lock, Truck } from "lucide-react"
 import { useCartStore } from "@/store/cart"
+import type { Money } from "@/lib/schemas/cart"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
@@ -14,6 +15,7 @@ import {
   SquareCardForm,
   type SquareCardFormHandle,
 } from "./square-card-form"
+import { SquareWalletButtons } from "./square-wallet-buttons"
 import { useSquarePayments } from "./square-payments-context"
 
 const formSchema = z.object({
@@ -37,7 +39,14 @@ function genIdempotencyKey(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
-export function CheckoutForm({ promoCode }: { promoCode: string }) {
+export function CheckoutForm({
+  promoCode,
+  total,
+}: {
+  promoCode: string
+  /** Calculated order total — enables Apple Pay / Google Pay when present. */
+  total: Money | null
+}) {
   const router = useRouter()
   const items = useCartStore((s) => s.items)
   const clear = useCartStore((s) => s.clear)
@@ -58,21 +67,16 @@ export function CheckoutForm({ promoCode }: { promoCode: string }) {
 
   const pickupMode = watch("pickupMode")
 
-  async function onSubmit(values: FormValues) {
+  /** Shared order placement — `token` comes from the card form or a wallet. */
+  async function placeOrder(values: FormValues, token: string) {
     if (items.length === 0) {
       setErrorMsg("Your bag is empty.")
-      return
-    }
-    if (sdkStatus !== "ready") {
-      setErrorMsg("Card form is still loading — please try again in a moment.")
       return
     }
     setSubmitting(true)
     setErrorMsg(null)
 
     try {
-      const token = await cardRef.current!.tokenize()
-
       const res = await fetch("/api/checkout/place-order", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -116,6 +120,31 @@ export function CheckoutForm({ promoCode }: { promoCode: string }) {
     }
   }
 
+  async function onSubmitCard(values: FormValues) {
+    if (sdkStatus !== "ready") {
+      setErrorMsg("Card form is still loading — please try again in a moment.")
+      return
+    }
+    try {
+      const token = await cardRef.current!.tokenize()
+      await placeOrder(values, token)
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Something went wrong.")
+    }
+  }
+
+  /**
+   * The wallet sheet already authorized payment when this runs; validate the
+   * contact fields and place the order, or surface the field errors so the
+   * customer can fix them and tap the wallet button again.
+   */
+  async function onWalletToken(token: string) {
+    await handleSubmit(
+      (values) => placeOrder(values, token),
+      () => setErrorMsg("Please complete your details above first."),
+    )()
+  }
+
   // datetime-local min = now+30 minutes (rounded), max = 30 days out
   const minDateTime = (() => {
     const d = new Date(Date.now() + 30 * 60 * 1000)
@@ -129,7 +158,7 @@ export function CheckoutForm({ promoCode }: { promoCode: string }) {
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmitCard)}
       noValidate
       className="space-y-8 rounded-2xl bg-card p-7 ring-1 ring-blush-200/60 shadow-sm sm:p-9"
     >
@@ -281,7 +310,14 @@ export function CheckoutForm({ promoCode }: { promoCode: string }) {
         title="Payment"
         subtitle="Card information is processed by Square — we never see or store it."
       >
-        <SquareCardForm ref={cardRef} />
+        <div className="space-y-5">
+          <SquareWalletButtons
+            total={total}
+            disabled={submitting}
+            onToken={onWalletToken}
+          />
+          <SquareCardForm ref={cardRef} />
+        </div>
       </Section>
 
       {errorMsg ? (

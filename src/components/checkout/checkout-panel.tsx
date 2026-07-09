@@ -63,7 +63,7 @@ export function CheckoutPanel() {
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
             Back to bag
           </Link>
-          <CheckoutForm promoCode={promoCode} />
+          <CheckoutForm promoCode={promoCode} total={totals?.total ?? null} />
         </div>
 
         <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
