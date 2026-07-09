@@ -16,6 +16,7 @@ import { Gallery } from './src/collections/Galeria'
 import { SpecialOrders } from './src/collections/PedidosEspeciales'
 import { OrderNotes } from './src/collections/OrderNotes'
 import { ProductOverrides } from './src/collections/ProductOverrides'
+import { Reviews } from './src/collections/Reviews'
 import { SiteConfig } from './src/globals/SiteConfig'
 import { resendPayloadAdapter } from './src/lib/email/payload-adapter'
 
@@ -68,6 +69,7 @@ export default buildConfig({
     SpecialOrders,
     OrderNotes,
     ProductOverrides,
+    Reviews,
   ],
   globals: [SiteConfig],
   editor: lexicalEditor(),

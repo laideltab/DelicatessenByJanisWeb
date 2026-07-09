@@ -151,6 +151,35 @@ export const getPublishedPosts = cache(
   },
 )
 
+export type ProductReview = {
+  id: string | number
+  squareItemId: string
+  name: string
+  rating: number
+  message: string
+  approved?: boolean | null
+  createdAt?: string | null
+}
+
+export const getApprovedReviews = cache(
+  async (squareItemId: string): Promise<ProductReview[]> => {
+    const payload = await getPayload({ config })
+    const result = await payload.find({
+      collection: "reviews",
+      where: {
+        and: [
+          { squareItemId: { equals: squareItemId } },
+          { approved: { equals: true } },
+        ],
+      },
+      sort: "-createdAt",
+      limit: 25,
+      overrideAccess: true,
+    })
+    return result.docs as ProductReview[]
+  },
+)
+
 export const getPostBySlug = cache(
   async (slug: string): Promise<BlogPost | null> => {
     const payload = await getPayload({ config })

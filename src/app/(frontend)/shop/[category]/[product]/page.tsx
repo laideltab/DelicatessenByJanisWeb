@@ -10,12 +10,14 @@ import {
   lexicalHasText,
   type ProductOverride,
 } from "@/lib/square/product-overrides"
+import { getApprovedReviews } from "@/lib/payload/content"
 import { Breadcrumb } from "@/components/shop/breadcrumb"
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld"
 import { ProductJsonLd } from "@/components/seo/product-jsonld"
 import { ProductGallery } from "@/components/shop/product-gallery"
 import { ProductPurchasePanel } from "@/components/shop/product-purchase-panel"
 import { ProductCard, ProductGrid } from "@/components/shop/product-card"
+import { ProductReviews } from "@/components/shop/product-reviews"
 import { formatPrice } from "@/lib/utils"
 
 export const revalidate = 60
@@ -123,6 +125,7 @@ export default async function ProductPage({
 
   const { category, product, related, override } = data
   const path = `/shop/${category.slug}/${product.slug}`
+  const reviews = await getApprovedReviews(product.id)
 
   const additionalImage = asMedia(override?.additionalImage)
   const galleryImages = additionalImage?.url
@@ -141,7 +144,7 @@ export default async function ProductPage({
           { name: product.name, path },
         ]}
       />
-      <ProductJsonLd product={product} path={path} />
+      <ProductJsonLd product={product} path={path} reviews={reviews} />
 
       <div className="bg-sugar-100 py-10 sm:py-12">
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -251,35 +254,11 @@ export default async function ProductPage({
         </section>
       ) : null}
 
-      <section
-        aria-labelledby="reviews-heading"
-        className="border-t border-blush-100 bg-sugar-100 py-16 sm:py-20"
-      >
-        <div className="mx-auto w-full max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-          <p className="text-xs font-medium uppercase tracking-[0.28em] text-ink-800">
-            Reviews
-          </p>
-          <h2
-            id="reviews-heading"
-            className="mt-3 font-display text-3xl leading-tight text-ink-900 sm:text-4xl"
-          >
-            Tasted this one?
-          </h2>
-          <p className="mt-4 text-base text-muted-foreground">
-            Customer reviews are rolling out soon. In the meantime, share your
-            bite with{" "}
-            <a
-              href="https://instagram.com/delicatessenbyjanis"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-ink-800 underline-offset-4 hover:underline"
-            >
-              @delicatessenbyjanis
-            </a>
-            .
-          </p>
-        </div>
-      </section>
+      <ProductReviews
+        reviews={reviews}
+        squareItemId={product.id}
+        productName={product.name}
+      />
     </>
   )
 }

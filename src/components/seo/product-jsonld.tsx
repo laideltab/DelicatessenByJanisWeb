@@ -1,10 +1,13 @@
 import { siteConfig } from "@/lib/site-config"
 import type { Product } from "@/lib/square/catalog"
+import type { ProductReview } from "@/lib/payload/content"
 
 interface ProductJsonLdProps {
   product: Product
   /** Canonical path for the product on this site, e.g. "/shop/cakes/chocolate". */
   path: string
+  /** Approved customer reviews — adds AggregateRating + Review when present. */
+  reviews?: ProductReview[]
 }
 
 /**
@@ -12,7 +15,7 @@ interface ProductJsonLdProps {
  * when more than one). Falls back to a single Offer using basePrice when there
  * are no variations with price.
  */
-export function ProductJsonLd({ product, path }: ProductJsonLdProps) {
+export function ProductJsonLd({ product, path, reviews }: ProductJsonLdProps) {
   const url = `${siteConfig.url}${path}`
   const images =
     product.imageUrls.length > 0 ? product.imageUrls : undefined
@@ -62,6 +65,30 @@ export function ProductJsonLd({ product, path }: ProductJsonLdProps) {
 
   if (images) data.image = images
   if (offers) data.offers = offers
+
+  if (reviews && reviews.length > 0) {
+    const average =
+      reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    data.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: average.toFixed(1),
+      reviewCount: reviews.length,
+      bestRating: 5,
+      worstRating: 1,
+    }
+    data.review = reviews.map((r) => ({
+      "@type": "Review",
+      author: { "@type": "Person", name: r.name },
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: r.rating,
+        bestRating: 5,
+        worstRating: 1,
+      },
+      reviewBody: r.message,
+      ...(r.createdAt ? { datePublished: r.createdAt.slice(0, 10) } : {}),
+    }))
+  }
 
   return (
     <script
