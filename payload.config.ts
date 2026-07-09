@@ -79,6 +79,10 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
+      // Supabase's session-mode pooler caps clients at 15. `next build`
+      // prerenders with 7 parallel workers, each holding its own pool, so
+      // keep per-process connections low enough that they fit together.
+      max: 2,
     },
   }),
   sharp,
