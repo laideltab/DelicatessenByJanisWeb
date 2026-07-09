@@ -5,11 +5,20 @@ import {
   getProductOverridesByItemId,
   type ProductOverride,
 } from "@/lib/square/product-overrides"
+import {
+  getActiveBanner,
+  getActiveGalleryImages,
+  getActiveTestimonials,
+  getCurrentPromotions,
+} from "@/lib/payload/content"
 import { Hero } from "@/components/home/hero"
 import { Marquee } from "@/components/home/marquee"
 import { Specialties, type SpecialtyCard } from "@/components/home/specialties"
 import { FeaturedProducts } from "@/components/home/featured-products"
 import { AboutJanis } from "@/components/home/about-janis"
+import { Promotions } from "@/components/home/promotions"
+import { Testimonials } from "@/components/home/testimonials"
+import { Gallery } from "@/components/home/gallery"
 import { VisitUs } from "@/components/home/visit-us"
 import { Newsletter } from "@/components/home/newsletter"
 import { LocalBusinessJsonLd } from "@/components/seo/local-business-jsonld"
@@ -103,9 +112,20 @@ function pickFeatured(
 }
 
 export default async function HomePage() {
-  const [{ categories, idToCategory }, overrides] = await Promise.all([
+  const [
+    { categories, idToCategory },
+    overrides,
+    banner,
+    promotions,
+    testimonials,
+    galleryImages,
+  ] = await Promise.all([
     getCatalogGrouped(),
     getProductOverridesByItemId(),
+    getActiveBanner(),
+    getCurrentPromotions(),
+    getActiveTestimonials(),
+    getActiveGalleryImages(),
   ])
 
   const specialtiesData: SpecialtyCard[] = categories.map((c) => ({
@@ -121,11 +141,14 @@ export default async function HomePage() {
   return (
     <>
       <LocalBusinessJsonLd />
-      <Hero />
+      <Hero banner={banner} />
       <Marquee />
+      <Promotions promotions={promotions} />
       <Specialties categories={specialtiesData} />
       <FeaturedProducts products={featured} />
       <AboutJanis />
+      <Testimonials testimonials={testimonials} />
+      <Gallery images={galleryImages} />
       <VisitUs />
       <Newsletter />
     </>

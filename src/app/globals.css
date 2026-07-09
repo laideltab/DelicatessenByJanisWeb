@@ -139,3 +139,44 @@
       linear-gradient(180deg, var(--color-sugar-100) 0%, #fbf2ee 55%, var(--color-blush-100) 100%);
   }
 }
+
+@layer components {
+  /* Long-form rich text from Payload (blog posts, long descriptions). */
+  .rich-text {
+    color: var(--color-ink-700);
+    line-height: 1.75;
+  }
+  .rich-text p,
+  .rich-text ul,
+  .rich-text ol,
+  .rich-text blockquote {
+    margin-block: 1em;
+  }
+  .rich-text h2,
+  .rich-text h3,
+  .rich-text h4 {
+    color: var(--color-ink-900);
+    margin-block: 1.5em 0.5em;
+  }
+  .rich-text h2 { font-size: 1.6rem; }
+  .rich-text h3 { font-size: 1.3rem; }
+  .rich-text h4 { font-size: 1.1rem; }
+  .rich-text ul { list-style: disc; padding-inline-start: 1.5em; }
+  .rich-text ol { list-style: decimal; padding-inline-start: 1.5em; }
+  .rich-text a {
+    color: var(--color-ink-800);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--color-brass-500);
+  }
+  .rich-text blockquote {
+    border-inline-start: 2px solid var(--color-brass-500);
+    padding-inline-start: 1em;
+    font-style: italic;
+  }
+  .rich-text img {
+    border-radius: 1rem;
+    max-width: 100%;
+    height: auto;
+  }
+}

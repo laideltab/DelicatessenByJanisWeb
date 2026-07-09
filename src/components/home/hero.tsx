@@ -1,8 +1,15 @@
+import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { asMedia } from "@/lib/square/product-overrides"
+import type { Banner } from "@/lib/payload/content"
 
-export function Hero() {
+export function Hero({ banner }: { banner?: Banner | null }) {
+  const bannerImage = asMedia(banner?.image)
+  const ctaText = banner?.cta?.text?.trim()
+  const ctaUrl = banner?.cta?.url?.trim()
+
   return (
     <section
       aria-labelledby="hero-heading"
@@ -36,36 +43,45 @@ export function Hero() {
             Est. — Doral, FL
           </span>
 
-          <h1
-            id="hero-heading"
-            className="font-display leading-[1.02] tracking-tight text-ink-900"
-          >
-            <span className="block text-[2.6rem] sm:text-[3.4rem] md:text-[4rem] lg:text-[4.6rem]">
-              The Secret
-            </span>
-            <span className="mt-1 block text-[2.6rem] italic text-ink-800 sm:text-[3.4rem] md:text-[4rem] lg:text-[4.6rem]">
-              Ingredient
-              <span
-                aria-hidden
-                className="mx-3 align-middle text-brass-500"
-              >
-                ✺
+          {banner ? (
+            <h1
+              id="hero-heading"
+              className="font-display text-[2.6rem] leading-[1.02] tracking-tight text-ink-900 sm:text-[3.4rem] md:text-[4rem] lg:text-[4.6rem]"
+            >
+              {banner.title}
+            </h1>
+          ) : (
+            <h1
+              id="hero-heading"
+              className="font-display leading-[1.02] tracking-tight text-ink-900"
+            >
+              <span className="block text-[2.6rem] sm:text-[3.4rem] md:text-[4rem] lg:text-[4.6rem]">
+                The Secret
               </span>
-              <span className="not-italic font-display font-light text-ink-900">
-                is Love
+              <span className="mt-1 block text-[2.6rem] italic text-ink-800 sm:text-[3.4rem] md:text-[4rem] lg:text-[4.6rem]">
+                Ingredient
+                <span
+                  aria-hidden
+                  className="mx-3 align-middle text-brass-500"
+                >
+                  ✺
+                </span>
+                <span className="not-italic font-display font-light text-ink-900">
+                  is Love
+                </span>
               </span>
-            </span>
-          </h1>
+            </h1>
+          )}
 
           <p className="max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Artisan cakes, coffee, and delicatessen — baked every morning by
-            Janis with ingredients she selects herself.
+            {banner?.subtitle ||
+              "Artisan cakes, coffee, and delicatessen — baked every morning by Janis with ingredients she selects herself."}
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
             <Button asChild size="lg">
-              <Link href="/shop">
-                Shop now
+              <Link href={ctaUrl || "/shop"}>
+                {ctaText || "Shop now"}
                 <ArrowRight />
               </Link>
             </Button>
@@ -114,17 +130,28 @@ export function Hero() {
               }}
             />
 
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="metadata"
-              poster="/video/hero-poster.jpg"
-              className="relative h-full w-full object-cover motion-reduce:hidden"
-            >
-              <source src="/video/hero.mp4" type="video/mp4" />
-            </video>
+            {bannerImage?.url ? (
+              <Image
+                src={bannerImage.url}
+                alt={bannerImage.alt || banner?.title || ""}
+                fill
+                priority
+                sizes="(min-width: 768px) 26rem, 100vw"
+                className="relative object-cover"
+              />
+            ) : (
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                poster="/video/hero-poster.jpg"
+                className="relative h-full w-full object-cover motion-reduce:hidden"
+              >
+                <source src="/video/hero.mp4" type="video/mp4" />
+              </video>
+            )}
 
             {/* Vignette + brass inset border on top of video */}
             <div

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next"
 import { siteConfig } from "@/lib/site-config"
 import { getCatalogGrouped } from "@/lib/square/queries"
+import { getPublishedPosts } from "@/lib/payload/content"
 
 /**
  * Single-file sitemap for delicatessenbyjanis.com. Square catalog drives the
@@ -21,6 +22,7 @@ const STATIC_PAGES: Array<{
   { path: "/contact", changeFrequency: "monthly", priority: 0.6 },
   { path: "/memberships", changeFrequency: "monthly", priority: 0.7 },
   { path: "/special-orders", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/blog", changeFrequency: "weekly", priority: 0.6 },
   { path: "/terms", changeFrequency: "yearly", priority: 0.2 },
 ]
 
@@ -73,5 +75,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("[sitemap] Square catalog unavailable:", err)
   }
 
-  return [...staticEntries, ...categoryEntries, ...productEntries]
+  let blogEntries: MetadataRoute.Sitemap = []
+  try {
+    const posts = await getPublishedPosts()
+    blogEntries = posts.map((p) => ({
+      url: url(`/blog/${p.slug}`),
+      lastModified: p.publishedAt ? new Date(p.publishedAt) : now,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    }))
+  } catch (err) {
+    console.error("[sitemap] Blog posts unavailable:", err)
+  }
+
+  return [
+    ...staticEntries,
+    ...categoryEntries,
+    ...productEntries,
+    ...blogEntries,
+  ]
 }
