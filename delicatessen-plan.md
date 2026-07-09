@@ -125,7 +125,7 @@ Payload maneja todo el contenido editorial del sitio.
 - [x] Selector de cantidad
 - [x] Boton "Agregar al carrito"
 - [x] Productos relacionados
-- [ ] Seccion de resenas (placeholder "coming soon" — falta implementar resenas reales)
+- [x] Seccion de resenas (envio publico con moderacion en el admin de Payload)
 
 **SEO en productos:**
 - Title: `[Nombre Producto] | Delicatessen by Janis` ✓
@@ -232,7 +232,7 @@ Configurar los modelos de contenido que Janis editara:
 - [x] `BreadcrumbList` en categorias y productos
 - [x] `ItemList` en paginas de categoria
 - [x] `FAQPage` en paginas relevantes (special-orders)
-- [ ] `Review` / `AggregateRating` en productos con resenas (depende de implementar resenas)
+- [x] `Review` / `AggregateRating` en productos con resenas aprobadas
 
 ### Sesion 5.3 — Sitemap y crawlability
 - [x] Sitemap dinamico (nativo de Next via `app/sitemap.ts`, incluye productos, categorias y blog)
@@ -364,5 +364,6 @@ web/
 1. Deploy en Vercel conectado al repo (si aun no esta)
 2. Registrar dominio para Apple Pay en Square Dashboard + probar wallets en sandbox
 3. Crear propiedad GA4 y setear NEXT_PUBLIC_GA_MEASUREMENT_ID en Vercel
-4. Sincronizacion de imagenes Square → Cloudflare R2 (opcional — hoy sirven desde CDN de Square)
-5. FASE 6 completa: testing funcional, auditoria SEO, dominio y launch
+4. Verificar EMAIL_FROM/EMAIL_ADMIN de Resend en produccion (contacto ahora envia email real)
+5. Sincronizacion de imagenes Square → Cloudflare R2 (opcional — hoy sirven desde CDN de Square)
+6. FASE 6 completa: testing funcional, auditoria SEO, dominio y launch

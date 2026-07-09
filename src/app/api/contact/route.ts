@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { contactSchema } from "@/lib/schemas/contact"
+import { sendContactAdminEmail } from "@/lib/email/send-contact"
 
 export const runtime = "nodejs"
 
@@ -19,9 +20,17 @@ export async function POST(req: Request) {
     )
   }
 
-  // TODO (Sesion 3.4): forward to Resend with a template + notification email
-  // to Janis. For now we just log so the form flow works end-to-end.
-  console.info("[contact] new message:", parsed.data)
+  try {
+    await sendContactAdminEmail(parsed.data)
+  } catch (err) {
+    // The message only exists in this request — surface the failure so the
+    // customer knows to reach us another way instead of assuming we got it.
+    console.error("[contact] send failed:", err)
+    return NextResponse.json(
+      { error: "Could not send your message — please call or email us directly." },
+      { status: 502 },
+    )
+  }
 
   return NextResponse.json({ ok: true })
 }
