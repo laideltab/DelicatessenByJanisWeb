@@ -166,7 +166,7 @@ Payload maneja todo el contenido editorial del sitio.
 - [x] Opciones de entrega: pickup en local vs delivery
 - [x] Selector de fecha y hora para pickup
 - [x] Integracion Square Web Payments SDK (tarjeta de credito)
-- [ ] Apple Pay / Google Pay via Square (tipos declarados, falta UI de wallet buttons)
+- [x] Apple Pay / Google Pay via Square (botones express en checkout; Apple Pay requiere ademas registrar el dominio en el Square Dashboard antes de producir)
 - [x] Creacion de Order en Square Orders API
 - [x] Procesamiento de pago via Square Payments API
 - [x] Pagina de confirmacion de orden
@@ -275,7 +275,7 @@ Configurar los modelos de contenido que Janis editara:
 - [ ] SSL verificado
 - [ ] Redireccionamientos 301 de URLs viejas de Wix a nuevas URLs
 - [ ] DNS cutover con minimo downtime
-- [ ] Verificar Google Analytics 4 funcionando (GA4 aun no integrado en el codigo)
+- [ ] Verificar Google Analytics 4 funcionando (codigo integrado y gated por NEXT_PUBLIC_GA_MEASUREMENT_ID; falta crear la propiedad GA4 y setear el ID en Vercel)
 - [ ] Activar Square en modo produccion (live credentials)
 - [ ] Monitoreo de errores con Sentry o Vercel Analytics
 
@@ -362,7 +362,7 @@ web/
 ## Proximos Pasos Inmediatos
 
 1. Deploy en Vercel conectado al repo (si aun no esta)
-2. Apple Pay / Google Pay en el checkout (Square Web Payments SDK)
-3. Sincronizacion de imagenes Square → Cloudflare R2
-4. Google Analytics 4 + monitoreo de errores
+2. Registrar dominio para Apple Pay en Square Dashboard + probar wallets en sandbox
+3. Crear propiedad GA4 y setear NEXT_PUBLIC_GA_MEASUREMENT_ID en Vercel
+4. Sincronizacion de imagenes Square → Cloudflare R2 (opcional — hoy sirven desde CDN de Square)
 5. FASE 6 completa: testing funcional, auditoria SEO, dominio y launch

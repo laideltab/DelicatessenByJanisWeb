@@ -3,6 +3,7 @@ import { Fraunces, Inter } from "next/font/google";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { CartDrawer } from "@/components/cart/cart-drawer";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { siteConfig } from "@/lib/site-config";
 import "../globals.css";
 
@@ -78,6 +79,7 @@ export default function FrontendLayout({
         <main className="flex-1">{children}</main>
         <SiteFooter />
         <CartDrawer />
+        <GoogleAnalytics />
       </body>
     </html>
   );
