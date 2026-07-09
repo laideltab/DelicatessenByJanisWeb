@@ -36,7 +36,8 @@ export function SquareWalletButtons({
   const [googleState, setGoogleState] = useState<WalletState>("init")
   const [walletError, setWalletError] = useState<string | null>(null)
 
-  const amount = total ? (total.amount / 100).toFixed(2) : null
+  // CalculatedTotals amounts are decimal dollars (see /api/cart/calculate).
+  const amount = total ? total.amount.toFixed(2) : null
   const currency = total?.currency ?? "USD"
 
   useEffect(() => {
